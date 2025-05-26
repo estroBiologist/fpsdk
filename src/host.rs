@@ -3,7 +3,7 @@ pub mod prompt;
 
 use std::collections::HashMap;
 use std::ffi::c_void;
-use std::os::raw::{c_char, c_int, c_uchar};
+use std::os::raw::{c_char, c_float, c_int, c_uchar};
 use std::slice;
 use std::sync::atomic::AtomicPtr;
 use std::sync::{Arc, Mutex};
@@ -310,6 +310,60 @@ impl Host {
     pub fn out_voice_handler(&self) -> Arc<Mutex<OutVoicer>> {
         Arc::clone(&self.out_voicer)
     }
+
+    /// adds a mono float buffer to a stereo float buffer, with left/right levels & ramping if needed
+    /// how it works: define 2 float params for each voice: LastLVol & LastRVol. Make them match LVol & RVol before the *first* rendering of that voice (unless ramping will occur from 0 to LVol at the beginning).
+    /// then, don't touch them anymore, just pass them to the function.
+    /// the level will ramp from the last ones (LastLVol) to the new ones (LVol) & will adjust LastLVol accordingly
+    /// LVol & RVol are the result of the ComputeLRVol function
+    /// for a quick & safe fade out, you can set LVol & RVol to zero, & kill the voice when both LastLVol & LastRVol will reach zero
+    pub fn add_wave_32fm_32fs_ramp(
+        &self,
+        src: &[f32],
+        dest: &mut [[f32; 2]],
+        lvol: f32,
+        rvol: f32,
+        last_lvol: &mut f32,
+        last_rvol: &mut f32,
+    ) {
+        unsafe {
+            host_add_wave_32fm_32fs_ramp(
+                *self.host_ptr.as_ptr(),
+                src.as_ptr() as *mut c_void,
+                dest.as_mut_ptr() as *mut c_void,
+                src.len() as i32,
+                lvol,
+                rvol,
+                last_lvol,
+                last_rvol
+            );
+        }
+    }
+    
+    /// same, but takes a stereo source
+    /// note that left & right channels are not mixed (not a true panning), but might be later
+    pub fn add_wave_32fs_32fs_ramp(
+        &self,
+        src: &[[f32; 2]],
+        dest: &mut [[f32; 2]],
+        lvol: f32,
+        rvol: f32,
+        last_lvol: &mut f32,
+        last_rvol: &mut f32,
+    ) {
+        unsafe {
+            host_add_wave_32fs_32fs_ramp(
+                *self.host_ptr.as_ptr(),
+                src.as_ptr() as *mut c_void,
+                dest.as_mut_ptr() as *mut c_void,
+                src.len() as i32,
+                lvol,
+                rvol,
+                last_lvol,
+                last_rvol
+            );
+        }
+    }
 }
 
 #[no_mangle]
@@ -346,6 +400,26 @@ extern "C" {
     fn host_get_insert_buf(host: *mut c_void, tag: intptr_t, offset: intptr_t) -> *mut c_void;
     fn host_get_mix_buf(host: *mut c_void, offset: intptr_t) -> *mut c_void;
     fn host_get_send_buf(host: *mut c_void, offset: intptr_t) -> *mut c_void;
+    fn host_add_wave_32fm_32fs_ramp(
+        host: *mut c_void,
+        src_buffer: *const c_void,
+        dest_buffer: *mut c_void,
+        length: c_int,
+        lvol: c_float,
+        rvol: c_float,
+        last_lvol: *mut c_float,
+        last_rvol: *mut c_float
+    );
+    fn host_add_wave_32fs_32fs_ramp(
+        host: *mut c_void,
+        src_buffer: *mut c_void,
+        dest_buffer: *mut c_void,
+        length: c_int,
+        lvol: c_float,
+        rvol: c_float,
+        last_lvol: *mut c_float,
+        last_rvol: *mut c_float
+    );
 }
 
 /// Type of the write-only buffer you want to get, using

@@ -150,6 +150,14 @@ extern "C" void *host_get_insert_buf(void *host, TPluginTag tag,
 extern "C" void *host_get_mix_buf(void *host, intptr_t offset);
 extern "C" void *host_get_send_buf(void *host, intptr_t offset);
 
+extern "C" void host_add_wave_32fm_32fs_ramp(void *host, void* src_buffer, void* dest_buffer,
+                                             int length, float lvol, float rvol,
+                                             float* last_lvol, float* last_rvol);
+
+extern "C" void host_add_wave_32fs_32fs_ramp(void *host, void* src_buffer, void* dest_buffer,
+                                             int length, float lvol, float rvol,
+                                             float* last_lvol, float* last_rvol);
+
 extern "C" bool prompt_show(void *host, int x, int y, char *msg, char *result,
                             int &color);
 

@@ -322,6 +322,34 @@ void *host_get_send_buf(void *host, intptr_t offset) {
     return ((TFruityPlugHost *)host)->GetSendBuffer(offset);
 }
 
+void host_add_wave_32fm_32fs_ramp(void *host, void* src_buffer, void* dest_buffer,
+                                  int length, float lvol, float rvol,
+                                  float* last_lvol, float* last_rvol) {
+    ((TFruityPlugHost *)host)->AddWave_32FM_32FS_Ramp(
+        src_buffer,
+        dest_buffer,
+        length,
+        lvol,
+        rvol,
+        *last_lvol,
+        *last_rvol
+    );
+}
+
+void host_add_wave_32fs_32fs_ramp(void *host, void* src_buffer, void* dest_buffer,
+                                  int length, float lvol, float rvol,
+                                  float* last_lvol, float* last_rvol) {
+    ((TFruityPlugHost *)host)->AddWave_32FS_32FS_Ramp(
+        src_buffer,
+        dest_buffer,
+        length,
+        lvol,
+        rvol,
+        *last_lvol,
+        *last_rvol
+    );
+}
+
 bool prompt_show(void *host, int x, int y, char *msg, char *result,
                  int &color) {
 
