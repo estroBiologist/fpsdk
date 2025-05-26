@@ -339,7 +339,7 @@ impl Host {
             );
         }
     }
-    
+
     /// same, but takes a stereo source
     /// note that left & right channels are not mixed (not a true panning), but might be later
     pub fn add_wave_32fs_32fs_ramp(
@@ -363,6 +363,22 @@ impl Host {
                 last_rvol
             );
         }
+    }
+
+    /// compute left & right levels using pan & volume info (USE THIS AFTER YOU DEFINED FPF_NewVoiceParams)
+    pub fn compute_l_r_vol(&self, pan: f32, volume: f32) -> [f32; 2] {
+        let mut vol = [0.0; 2];
+
+        unsafe {
+            host_compute_l_r_vol(
+                *self.host_ptr.as_ptr(),
+                &mut vol[0],
+                &mut vol[1],
+                pan,
+                volume
+            );
+        }
+        vol
     }
 }
 
@@ -400,6 +416,13 @@ extern "C" {
     fn host_get_insert_buf(host: *mut c_void, tag: intptr_t, offset: intptr_t) -> *mut c_void;
     fn host_get_mix_buf(host: *mut c_void, offset: intptr_t) -> *mut c_void;
     fn host_get_send_buf(host: *mut c_void, offset: intptr_t) -> *mut c_void;
+    fn host_compute_l_r_vol(
+        host: *mut c_void,
+        lvol: *mut c_float,
+        rvol: *mut c_float,
+        pan: c_float,
+        volume: c_float
+    );
     fn host_add_wave_32fm_32fs_ramp(
         host: *mut c_void,
         src_buffer: *const c_void,

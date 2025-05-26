@@ -158,6 +158,8 @@ extern "C" void host_add_wave_32fs_32fs_ramp(void *host, void* src_buffer, void*
                                              int length, float lvol, float rvol,
                                              float* last_lvol, float* last_rvol);
 
+extern "C" void host_compute_l_r_vol(void* host, float* lvol, float* rvol, float pan, float volume);
+
 extern "C" bool prompt_show(void *host, int x, int y, char *msg, char *result,
                             int &color);
 

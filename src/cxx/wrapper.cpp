@@ -350,6 +350,10 @@ void host_add_wave_32fs_32fs_ramp(void *host, void* src_buffer, void* dest_buffe
     );
 }
 
+void host_compute_l_r_vol(void* host, float* lvol, float* rvol, float pan, float volume) {
+    ((TFruityPlugHost *)host)->ComputeLRVol(*lvol, *rvol, pan, volume);
+}
+
 bool prompt_show(void *host, int x, int y, char *msg, char *result,
                  int &color) {
 
