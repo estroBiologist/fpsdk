@@ -361,6 +361,10 @@ bool prompt_show(void *host, int x, int y, char *msg, char *result,
     return ((TFruityPlugHost *)host)->PromptEdit(x, y, msg, result, color);
 }
 
+void *host_get_app_handle(void *host) {
+    return (void*)((TFruityPlugHost *)host)->AppHandle;
+}
+
 // Host voice-related
 
 intptr_t host_on_voice_event(void *host, intptr_t tag, FlMessage message) {

@@ -164,6 +164,8 @@ extern "C" void host_compute_l_r_vol(void* host, float* lvol, float* rvol, float
 extern "C" bool prompt_show(void *host, int x, int y, char *msg, char *result,
                             int &color);
 
+extern "C" void *host_get_app_handle(void *host);
+
 // Host voice-related
 extern "C" void host_release_voice(void *host, intptr_t tag);
 extern "C" void host_kill_voice(void *host, intptr_t tag);
