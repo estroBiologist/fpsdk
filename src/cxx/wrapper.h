@@ -34,6 +34,7 @@ struct LevelParams {
 struct Params {
     LevelParams init_levels;
     LevelParams final_levels;
+    PVoiceParams ptr;
 };
 
 class PluginWrapper : public TFruityPlug {

@@ -47,6 +47,21 @@ pub struct Params {
     pub init_levels: LevelParams,
     /// Made to be checked every time.
     pub final_levels: LevelParams,
+    /// Pointer to original level params, which may change over time. (Hack)
+    pub ptr: *mut OriginalLevelParams,
+}
+
+unsafe impl Send for Params {}
+unsafe impl Sync for Params {}
+
+/// Original voice params on FL Studio side, which may change over time. Accessed through [`Params`](struct.Params.html).
+#[derive(Clone, Debug)]
+#[repr(C)]
+pub struct OriginalLevelParams {
+    /// Made to be checked once the voice is triggered.
+    pub init_levels: LevelParams,
+    /// Made to be checked every time.
+    pub final_levels: LevelParams,
 }
 
 /// This structure holds the parameters for a channel. They're used both for final voice levels

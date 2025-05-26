@@ -163,6 +163,7 @@ TVoiceHandle _stdcall PluginWrapper::TriggerVoice(PVoiceParams voice_params,
     Params params = {
         init_levels,
         final_levels,
+        voice_params,
     };
 
     return (TVoiceHandle)voice_handler_trigger(adapter, params, set_tag);
