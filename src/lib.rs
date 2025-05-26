@@ -308,7 +308,7 @@ impl EditorHandle {
 
     #[cfg(target_os = "windows")]
     unsafe fn attach_editor_win<V: HasRawWindowHandle>(&self, view: &mut V) {
-        if let RawWindowHandle::Windows(handle) = view.raw_window_handle() {
+        if let RawWindowHandle::Win32(handle) = view.raw_window_handle() {
             if handle.hwnd.is_null() {
                 return;
             }

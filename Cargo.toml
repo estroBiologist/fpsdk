@@ -15,7 +15,7 @@ targets = [ "x86_64-apple-darwin", "x86_64-pc-windows-msvc" ]
 bitflags = "1.2"
 hresult = "0.0.1"
 log = "0.4"
-raw-window-handle = "0.3"
+raw-window-handle = "0.5.2"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.20"
