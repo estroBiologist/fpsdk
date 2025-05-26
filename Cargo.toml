@@ -20,15 +20,17 @@ raw-window-handle = "0.3"
 [target.'cfg(target_os = "macos")'.dependencies]
 cocoa = "0.20"
 
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.61.1", features = ["Win32_UI_WindowsAndMessaging"] }
+
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
 
 [dev-dependencies]
 bincode = "1.2"
 chrono = "0.4"
-cocoa = "0.20"
-iced_wgpu = { git = "https://github.com/hecrj/iced.git" }
-iced_winit = { git = "https://github.com/hecrj/iced.git" }
+iced_wgpu = "0.13.5"
+iced_winit = "0.13.0"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 simple-logging = "2.0"

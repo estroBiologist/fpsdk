@@ -64,6 +64,9 @@ use cocoa::base::id;
 use log::{debug, error};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
+#[cfg(target_os = "windows")]
+use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetParent};
+
 /// Current FL SDK version.
 pub const CURRENT_SDK_VERSION: u32 = 1;
 
@@ -164,14 +167,15 @@ impl AsRawPtr for String {
     }
 }
 
-/// FFI to make C string (`char *`) managed by C side. Because `char *` produced by
-/// `CString::into_raw` leads to memory leak:
-///
-/// > The pointer which this function returns must be returned to Rust and reconstituted using
-/// > from_raw to be properly deallocated. Specifically, one should not use the standard C free()
-/// > function to deallocate this string.
-#[no_mangle]
+
+
 extern "C" {
+    /// FFI to make C string (`char *`) managed by C side. Because `char *` produced by
+    /// `CString::into_raw` leads to memory leak:
+    ///
+    /// > The pointer which this function returns must be returned to Rust and reconstituted using
+    /// > from_raw to be properly deallocated. Specifically, one should not use the standard C free()
+    /// > function to deallocate this string.
     fn alloc_real_cstr(raw_str: *mut c_char) -> *mut c_char;
 }
 
@@ -303,7 +307,15 @@ impl EditorHandle {
     }
 
     #[cfg(target_os = "windows")]
-    unsafe fn attach_editor_win<V: HasRawWindowHandle>(&self, view: &mut V) {}
+    unsafe fn attach_editor_win<V: HasRawWindowHandle>(&self, view: &mut V) {
+        if let RawWindowHandle::Windows(handle) = view.raw_window_handle() {
+            if handle.hwnd.is_null() {
+                return;
+            }
+            
+            SetParent(HWND(handle.hwnd), Some(HWND(self.raw_handle))).unwrap();
+        }
+    }
 }
 
 impl FromRawPtr for EditorHandle {
