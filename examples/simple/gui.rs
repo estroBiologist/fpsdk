@@ -7,6 +7,7 @@ use cocoa::appkit::{NSBackingStoreType, NSView, NSWindow, NSWindowStyleMask};
 use cocoa::base::{id, nil};
 use cocoa::foundation::{NSPoint, NSRect, NSSize};
 
+use iced_wgpu::core::{Font, Pixels};
 use iced_wgpu::{wgpu, Backend, Renderer, Settings, Viewport};
 use iced_winit::{futures, program, winit, Debug, Size};
 
@@ -101,7 +102,7 @@ impl EventHandler {
         let format = wgpu::TextureFormat::Bgra8UnormSrgb;
         let swap_chain = Self::init_swap_chain(&window, &device, &surface, &format);
         let mut debug = Debug::new();
-        let mut renderer = Renderer::new(Backend::new(&mut device, Settings::default()));
+        let mut renderer = Renderer::new(Backend::new(&mut device, Settings::default()), Font::default(), Pixels(16.0));
         let state: program::State<Controls> = program::State::new(
             Controls::new(),
             viewport.logical_size(),
@@ -140,6 +141,7 @@ impl EventHandler {
                 &wgpu::RequestAdapterOptions {
                     power_preference: wgpu::PowerPreference::Default,
                     compatible_surface: Some(&surface),
+                    force_fallback_adapter: false,
                 },
                 wgpu::BackendBit::PRIMARY,
             )
@@ -147,12 +149,7 @@ impl EventHandler {
             .expect("Request adapter");
 
             adapter
-                .request_device(&wgpu::DeviceDescriptor {
-                    extensions: wgpu::Extensions {
-                        anisotropic_filtering: false,
-                    },
-                    limits: wgpu::Limits::default(),
-                })
+                .request_device(&wgpu::DeviceDescriptor::default())
                 .await
         })
     }
@@ -257,6 +254,9 @@ impl EventHandler {
                         },
                     }],
                     depth_stencil_attachment: None,
+                    label: None,
+                    timestamp_writes: None,
+                    occlusion_query_set: None,
                 });
 
                 // And then iced on top
