@@ -65,7 +65,7 @@ use log::{debug, error};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 #[cfg(target_os = "windows")]
-use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::SetParent};
+use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::{SetParent, GetWindowRect, SetWindowPos, SWP_NOMOVE}};
 
 /// Current FL SDK version.
 pub const CURRENT_SDK_VERSION: u32 = 1;
@@ -308,12 +308,19 @@ impl EditorHandle {
 
     #[cfg(target_os = "windows")]
     unsafe fn attach_editor_win<V: HasRawWindowHandle>(&self, view: &mut V) {
+
         if let RawWindowHandle::Win32(handle) = view.raw_window_handle() {
             if handle.hwnd.is_null() {
                 return;
             }
-            
-            SetParent(HWND(handle.hwnd), Some(HWND(self.raw_handle))).unwrap();
+
+            let child = HWND(handle.hwnd);
+            let parent = HWND(self.raw_handle);
+            let mut rect = windows::Win32::Foundation::RECT::default(); 
+
+            GetWindowRect(child, &mut rect).unwrap();
+            SetWindowPos(parent, None, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE).unwrap();
+            SetParent(child, Some(parent)).unwrap();
         }
     }
 }
