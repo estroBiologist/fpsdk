@@ -65,7 +65,7 @@ use log::{debug, error};
 use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 #[cfg(target_os = "windows")]
-use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::{SetParent, GetWindowRect, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE}};
+use windows::Win32::{Foundation::HWND, UI::WindowsAndMessaging::{SetParent, GetWindowRect, SetWindowPos, SWP_NOMOVE}};
 
 /// Current FL SDK version.
 pub const CURRENT_SDK_VERSION: u32 = 1;
@@ -320,8 +320,6 @@ impl EditorHandle {
             GetWindowRect(child, &mut rect).unwrap();
             SetWindowPos(parent, None, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE).unwrap();
             SetParent(child, Some(parent)).unwrap();
-            GetWindowRect(parent, &mut rect).unwrap();
-            SetWindowPos(child, None, rect.left, rect.top, 0, 0, SWP_NOSIZE).unwrap();
         }
     }
 }
