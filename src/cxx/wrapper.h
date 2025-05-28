@@ -2,6 +2,8 @@
 
 #include "fp_plugclass.h"
 
+extern HINSTANCE HInstance;
+
 struct PluginAdapter;
 
 struct FlMessage {
@@ -165,6 +167,8 @@ extern "C" bool prompt_show(void *host, int x, int y, char *msg, char *result,
                             int &color);
 
 extern "C" void *host_get_app_handle(void *host);
+
+extern "C" void *get_hinstance();
 
 // Host voice-related
 extern "C" void host_release_voice(void *host, intptr_t tag);
