@@ -89,14 +89,15 @@ void _stdcall PluginWrapper::SaveRestoreState(IStream *stream, BOOL save) {
 
 intptr_t _stdcall PluginWrapper::Dispatcher(intptr_t id, intptr_t index,
                                             intptr_t value) {
-
-    if (id == FPD_ShowEditor) {
-        EditorHandle = (HWND)value;
-    }
-
     FlMessage message = {id, index, value};
 
-    return plugin_dispatcher(adapter, message);
+    auto result = plugin_dispatcher(adapter, message);
+    
+    if (id == FHD_ShowEditor) {
+        EditorHandle = (HWND)result;
+    }
+
+    return result;
 }
 
 void _stdcall PluginWrapper::GetName(int section, int index, int value,
