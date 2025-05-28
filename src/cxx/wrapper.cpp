@@ -93,7 +93,7 @@ intptr_t _stdcall PluginWrapper::Dispatcher(intptr_t id, intptr_t index,
 
     auto result = plugin_dispatcher(adapter, message);
     
-    if (id == FHD_ShowEditor) {
+    if (id == FPD_ShowEditor) {
         EditorHandle = (HWND)result;
     }
 
