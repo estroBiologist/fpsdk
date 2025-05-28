@@ -384,10 +384,6 @@ impl Host {
     pub fn get_app_handle(&self) -> *mut c_void {
         unsafe { host_get_app_handle(*self.host_ptr.as_ptr()) }
     }
-
-    pub fn get_hinstance() -> *mut c_void {
-        unsafe { get_hinstance() }
-    }
 }
 
 #[no_mangle]
@@ -455,8 +451,6 @@ extern "C" {
     fn host_get_app_handle(
         host: *mut c_void
     ) -> *mut c_void;
-
-    fn get_hinstance() -> *mut c_void;
 }
 
 /// Type of the write-only buffer you want to get, using

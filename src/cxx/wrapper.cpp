@@ -3,8 +3,6 @@
 #include <cstring>
 #include <stdlib.h>
 
-HINSTANCE HInstance;
-
 intptr_t init_p_notes_params(int target, int flags, int ch_num, int pat_num,
                              TNoteParams *notes, int len) {
     TNotesParams *params = (TNotesParams *)malloc(sizeof(TNotesParams) +
@@ -365,10 +363,6 @@ bool prompt_show(void *host, int x, int y, char *msg, char *result,
 
 void *host_get_app_handle(void *host) {
     return (void*)((TFruityPlugHost *)host)->AppHandle;
-}
-
-void *get_hinstance() {
-    return (void*)HInstance;
 }
 
 // Host voice-related
