@@ -1090,6 +1090,15 @@ unsafe extern "C" fn fplog(message: *const c_char) {
     debug!("{}", CStr::from_ptr(message).to_string_lossy());
 }
 
+/// HEY THIS DOESN'T WORK
+/// Rust needs the type information to call Drop, so
+/// constructing a Box<c_void> won't do anything
+/// 
+/// I've added type-specific variants for
+/// plugin::PluginAdapter and plugin::Info below
+///    - ash
+/// 
+/// 
 /// FFI to free rust's Box::into_raw pointer.
 ///
 /// It supposed to be used internally. Don't use it.
@@ -1100,6 +1109,16 @@ unsafe extern "C" fn fplog(message: *const c_char) {
 #[no_mangle]
 unsafe extern "C" fn free_rbox_raw(raw_ptr: *mut c_void) {
     let _ = Box::from_raw(raw_ptr);
+}
+
+#[no_mangle]
+unsafe extern "C" fn free_plugin_adapter(plugin_adapter: *mut c_void) {
+    let _ = Box::from_raw(plugin_adapter as *mut plugin::PluginAdapter);
+}
+
+#[no_mangle]
+unsafe extern "C" fn free_plugin_info(plugin_info: *mut c_void) {
+    let _ = Box::from_raw(plugin_info as *mut plugin::Info);
 }
 
 /// FFI to free rust's CString pointer.
