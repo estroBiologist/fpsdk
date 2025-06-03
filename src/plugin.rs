@@ -352,6 +352,12 @@ impl InfoBuilder {
         self
     }
 
+    /// Plugin can steal keyboard focus away from FL
+    pub fn can_steal_kb_focus(mut self) -> Self {
+        self.flags |= 1 << 25;
+        self
+    }
+
     /// (macOS only) Allows you to make your plugin's view a subview of FL's plugin window. Should
     /// be added if you're building a plugin with GUI and it's supposed to be used on macOS.
     pub fn mac_needs_nsview(mut self) -> Self {
