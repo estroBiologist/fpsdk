@@ -1362,6 +1362,22 @@ impl From<GetProjectInfo> for intptr_t {
     }
 }
 
+/// Ask FL to pop up a parameter menu, so the plugin doesn't have to implement it itself.
+#[derive(Debug)]
+pub struct ShowStandardParamMenu(pub usize);
+
+impl_message!(ShowStandardParamMenu);
+
+impl From<ShowStandardParamMenu> for FlMessage {
+    fn from(message: ShowStandardParamMenu) -> Self {
+        FlMessage {
+            id: 75,
+            index: message.0 as isize,
+            value: 0,
+        }
+    }
+}
+
 fn dword_from_note_and_ch(note: u8, channel: u8) -> u32 {
     (note as u32) | ((channel as u32) << 16)
 }
