@@ -59,16 +59,16 @@ pub trait Plugin {
     /// Get plugin [`Info`](struct.Info.html).
     fn info(&self) -> Info;
     /// Save plugin's state.
-    fn save_state(&mut self, writer: StateWriter);
+    fn save_state(&self, writer: StateWriter);
     /// Load plugin's state.
-    fn load_state(&mut self, reader: StateReader);
+    fn load_state(&self, reader: StateReader);
     /// The host calls this function to request something that isn't done in a specialized
     /// function.
     ///
     /// See [`host::Message`](../host/enum.Message.html) for possible messages.
     ///
     /// Can be called from GUI or mixer threads.
-    fn on_message(&mut self, message: host::Message<'_>) -> Box<dyn AsRawPtr>;
+    fn on_message(&self, message: host::Message<'_>) -> Box<dyn AsRawPtr>;
     /// This is called when the host wants to know a text representation of some value.
     ///
     /// Can be called from GUI or mixer threads.
@@ -76,7 +76,7 @@ pub trait Plugin {
     /// Process an event sent by the host.
     ///
     /// Can be called from GUI or mixer threads.
-    fn process_event(&mut self, _event: Event) {}
+    fn process_event(&self, _event: Event) {}
     /// Something has to be done concerning a parameter. What exactly has to be done is explained
     /// by the `flags` parameter (see [`ProcessParamFlags`](../struct.ProcessParamFlags.html)).
     ///
@@ -92,7 +92,7 @@ pub trait Plugin {
     ///
     /// Can be called from GUI or mixer threads.
     fn process_param(
-        &mut self,
+        &self,
         _index: usize,
         _value: ValuePtr,
         _flags: ProcessParamFlags,
@@ -104,7 +104,7 @@ pub trait Plugin {
     /// function you may show a hint message when the mouse moves over a control in the editor.
     ///
     /// Called from GUI thread.
-    fn idle(&mut self) {}
+    fn idle(&self) {}
     /// Gets called before a new tick is mixed (not played), if the plugin added
     /// [`InfoBuilder::want_new_tick`](../plugin/struct.InfoBuilder.html#method.want_new_tick) into
     /// [`Info`](../struct.Info.html).
@@ -114,21 +114,21 @@ pub trait Plugin {
     /// here.
     ///
     /// Called from mixer thread.
-    fn tick(&mut self) {}
+    fn tick(&self) {}
     /// This is called before a new midi tick is played (not mixed).
     ///
     /// Can be called from GUI or mixer threads.
-    fn midi_tick(&mut self) {}
+    fn midi_tick(&self) {}
     /// The processing function. The input buffer is empty for generator plugins.
     ///
     /// The buffers are in interlaced 32Bit float stereo format.
     ///
     /// Called from mixer thread.
-    fn render(&mut self, _input: &[[f32; 2]], _output: &mut [[f32; 2]]) {}
+    fn render(&self, _input: &[[f32; 2]], _output: &mut [[f32; 2]]) {}
     /// Get [`ReceiveVoiceHandler`](../voice/trait.ReceiveVoiceHandler.html).
     ///
     /// Implement this method if you make a generator plugin.
-    fn voice_handler(&mut self) -> Option<&mut dyn ReceiveVoiceHandler> {
+    fn voice_handler(&self) -> Option<&dyn ReceiveVoiceHandler> {
         None
     }
     /// The host will call this when there's new MIDI data available. This function is only called
@@ -138,11 +138,11 @@ pub trait Plugin {
     /// value set to `true`.
     ///
     /// Can be called from GUI or mixer threads.
-    fn midi_in(&mut self, _message: MidiMessage) {}
+    fn midi_in(&self, _message: MidiMessage) {}
     /// **MAY NOT WORK**
     ///
     /// This gets called with a new buffered message to the plugin itself.
-    fn loop_in(&mut self, _message: ValuePtr) {}
+    fn loop_in(&self, _message: ValuePtr) {}
 }
 
 /// This structure holds some information about the plugin that is used by the host. It is the

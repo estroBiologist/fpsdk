@@ -14,17 +14,17 @@ pub trait ReceiveVoiceHandler: Send + Sync {
     /// The host calls this to let it create a voice.
     ///
     /// The `tag` parameter is an identifier the host uses to identify the voice.
-    fn trigger(&mut self, params: Params, tag: Tag) -> &mut dyn Voice;
+    fn trigger(&self, params: Params, tag: Tag) -> &mut dyn Voice;
     /// This gets called by the host when the voice enters the envelope release state (note off).
-    fn release(&mut self, tag: Tag);
+    fn release(&self, tag: Tag);
     /// Called when the voice has to be discarded.
-    fn kill(&mut self, tag: Tag);
+    fn kill(&self, tag: Tag);
     /// Process a voice event.
-    fn on_event(&mut self, _tag: Tag, _event: Event) -> Box<dyn AsRawPtr> {
+    fn on_event(&self, _tag: Tag, _event: Event) -> Box<dyn AsRawPtr> {
         Box::new(0)
     }
     /// Getter for [`SendVoiceHandler`](trait.SendVoiceHandler.html).
-    fn out_handler(&mut self) -> Option<&mut dyn SendVoiceHandler> {
+    fn out_handler(&self) -> Option<&mut dyn SendVoiceHandler> {
         None
     }
 }

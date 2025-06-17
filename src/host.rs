@@ -522,7 +522,7 @@ impl SendVoiceHandler for Voicer {
     ///
     /// This method forces FL Studio to ask the plugin to destroy its voice.
     fn kill(&mut self, tag: voice::Tag) {
-        trace!("manully kill voice {}", tag);
+        trace!("manually kill voice {}", tag);
         unsafe { host_kill_voice(*self.host_ptr.get_mut(), tag.0) };
     }
 
