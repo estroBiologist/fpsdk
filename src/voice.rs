@@ -1,7 +1,5 @@
 //! Voices used by the generator plugins to track their instantiation, release, freeing and events
 //! processing.
-use std::os::raw::c_void;
-
 use crate::plugin::PluginAdapter;
 use crate::{intptr_t, AsRawPtr, FlMessage, ValuePtr};
 
@@ -14,7 +12,7 @@ pub trait ReceiveVoiceHandler: Send + Sync {
     /// The host calls this to let it create a voice.
     ///
     /// The `tag` parameter is an identifier the host uses to identify the voice.
-    fn trigger(&self, params: Params, tag: Tag) -> &mut dyn Voice;
+    fn trigger(&self, params: Params, tag: Tag) -> Tag;
     /// This gets called by the host when the voice enters the envelope release state (note off).
     fn release(&self, tag: Tag);
     /// Called when the voice has to be discarded.
@@ -27,12 +25,6 @@ pub trait ReceiveVoiceHandler: Send + Sync {
     fn out_handler(&self) -> Option<&mut dyn SendVoiceHandler> {
         None
     }
-}
-
-/// You should implement this trait to your voice type.
-pub trait Voice: Send + Sync {
-    /// Get ID of the voice.
-    fn tag(&self) -> Tag;
 }
 
 /// This is the type for the parameters for a voice. Normally, you'll only use `final_levels`. The
@@ -186,7 +178,7 @@ pub trait SendVoiceHandler: Send + Sync {
     /// - `tag` is an identifier the host uses to identify the voice.
     /// - `index` is voice output index in patcher.
     ///
-    fn trigger(&mut self, _params: Params, _index: usize, _tag: Tag) -> Option<&mut dyn Voice> {
+    fn trigger(&mut self, _params: Params, _index: usize, _tag: Tag) -> Option<Tag> {
         None
     }
     /// This gets called by the host when the voice enters the envelope release state (note off).
@@ -219,9 +211,7 @@ unsafe extern "C" fn voice_handler_trigger(
         .0
         .voice_handler()
         .map(|handler| {
-            let voice_ptr: *mut &mut dyn Voice =
-                Box::leak(Box::new(handler.trigger(params, Tag(tag))));
-            voice_ptr as *mut c_void as intptr_t
+            handler.trigger(params, Tag(tag)).0
         })
         .unwrap_or(-1)
 }
@@ -237,13 +227,13 @@ unsafe extern "C" fn voice_handler_trigger(
 #[no_mangle]
 unsafe extern "C" fn voice_handler_release(
     adapter: *mut PluginAdapter,
-    voice: *mut &mut dyn Voice,
+    voice: Tag,
 ) {
     // We don't call Box::from_raw because:
     // 1. Host calls this then voice_handler_kill — this way we'll get double deallocation
     // 2. Given FL SDK documentation, we shouldn't deallocate voices here
     if let Some(handler) = (*adapter).0.voice_handler() {
-        handler.release((*voice).tag())
+        handler.release(voice)
     }
 }
 
@@ -256,10 +246,9 @@ unsafe extern "C" fn voice_handler_release(
 /// Unsafe
 #[doc(hidden)]
 #[no_mangle]
-unsafe extern "C" fn voice_handler_kill(adapter: *mut PluginAdapter, voice: *mut &mut dyn Voice) {
-    let r_voice = Box::from_raw(voice);
+unsafe extern "C" fn voice_handler_kill(adapter: *mut PluginAdapter, voice: Tag) {
     if let Some(handler) = (*adapter).0.voice_handler() {
-        handler.kill(r_voice.tag())
+        handler.kill(voice)
     }
 }
 
@@ -291,7 +280,7 @@ unsafe extern "C" fn out_voice_handler_kill(adapter: *mut PluginAdapter, tag: in
 #[no_mangle]
 unsafe extern "C" fn voice_handler_on_event(
     adapter: *mut PluginAdapter,
-    voice: *mut &mut dyn Voice,
+    voice: Tag,
     message: FlMessage,
 ) -> intptr_t {
     (*adapter)
@@ -299,7 +288,7 @@ unsafe extern "C" fn voice_handler_on_event(
         .voice_handler()
         .map(|handler| {
             handler
-                .on_event((*voice).tag(), message.into())
+                .on_event(voice, message.into())
                 .as_raw_ptr()
         })
         .unwrap_or(-1)

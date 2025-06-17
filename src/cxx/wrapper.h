@@ -106,9 +106,9 @@ extern "C" void plugin_loop_in(PluginAdapter *adapter, intptr_t message);
 // Voice handler
 extern "C" intptr_t voice_handler_trigger(PluginAdapter *adapter, Params params,
                                           intptr_t tag);
-extern "C" void voice_handler_release(PluginAdapter *adapter, void *voice);
-extern "C" void voice_handler_kill(PluginAdapter *adapter, void *voice);
-extern "C" intptr_t voice_handler_on_event(PluginAdapter *adapter, void *voice,
+extern "C" void voice_handler_release(PluginAdapter *adapter, intptr_t voice);
+extern "C" void voice_handler_kill(PluginAdapter *adapter, intptr_t voice);
+extern "C" intptr_t voice_handler_on_event(PluginAdapter *adapter, intptr_t voice,
                                            FlMessage message);
 extern "C" void out_voice_handler_kill(PluginAdapter *adapter, intptr_t tag);
 extern "C" intptr_t out_voice_handler_on_event(PluginAdapter *adapter,

@@ -171,11 +171,11 @@ TVoiceHandle _stdcall PluginWrapper::TriggerVoice(PVoiceParams voice_params,
 }
 
 void _stdcall PluginWrapper::Voice_Release(TVoiceHandle handle) {
-    voice_handler_release(adapter, (void *)handle);
+    voice_handler_release(adapter, handle);
 }
 
 void _stdcall PluginWrapper::Voice_Kill(TVoiceHandle handle) {
-    voice_handler_kill(adapter, (void *)handle);
+    voice_handler_kill(adapter, handle);
 }
 
 int _stdcall PluginWrapper::Voice_ProcessEvent(TVoiceHandle handle,
@@ -187,7 +187,7 @@ int _stdcall PluginWrapper::Voice_ProcessEvent(TVoiceHandle handle,
         (intptr_t)flags,
     };
 
-    return (int)voice_handler_on_event(adapter, (void *)handle, message);
+    return (int)voice_handler_on_event(adapter, handle, message);
 }
 
 int _stdcall PluginWrapper::Voice_Render(TVoiceHandle, PWAV32FS, int &) {

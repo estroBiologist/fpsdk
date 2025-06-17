@@ -11,7 +11,7 @@ use std::sync::{Arc, Mutex};
 use log::trace;
 
 use crate::plugin::{self, message};
-use crate::voice::{self, SendVoiceHandler, Voice};
+use crate::voice::{self, SendVoiceHandler};
 use crate::{
     intptr_t, AsRawPtr, EditorHandle, FlMessage, FromRawPtr, MidiMessage, ProcessModeFlags,
     TTimeSigInfo, TimeSignature, Transport, ValuePtr, WAVETABLE_SIZE,
@@ -565,7 +565,7 @@ impl SendVoiceHandler for OutVoicer {
         params: voice::Params,
         index: usize,
         tag: voice::Tag,
-    ) -> Option<&mut dyn Voice> {
+    ) -> Option<voice::Tag> {
         let params_ptr = Box::into_raw(Box::new(params));
         let inner_tag = unsafe {
             host_trig_out_voice(*self.host_ptr.get_mut(), params_ptr, index as i32, tag.0)
@@ -581,7 +581,7 @@ impl SendVoiceHandler for OutVoicer {
         let voice = OutVoice::new(tag, AtomicPtr::new(params_ptr), voice::Tag(inner_tag));
         trace!("send trigger output voice {:?}", voice);
         self.voices.insert(tag, voice);
-        Some(self.voices.get_mut(&tag).unwrap())
+        Some(tag)
     }
 
     fn release(&mut self, tag: voice::Tag) {
@@ -615,15 +615,13 @@ impl SendVoiceHandler for OutVoicer {
 /// Output voice.
 #[derive(Debug)]
 pub struct OutVoice {
-    tag: voice::Tag,
     params_ptr: AtomicPtr<voice::Params>,
     inner_tag: voice::Tag,
 }
 
 impl OutVoice {
-    fn new(tag: voice::Tag, params_ptr: AtomicPtr<voice::Params>, inner_tag: voice::Tag) -> Self {
+    fn new(_tag: voice::Tag, params_ptr: AtomicPtr<voice::Params>, inner_tag: voice::Tag) -> Self {
         Self {
-            tag,
             params_ptr,
             inner_tag,
         }
@@ -640,12 +638,6 @@ impl OutVoice {
     /// Get inner tag.
     pub fn inner_tag(&self) -> voice::Tag {
         self.inner_tag
-    }
-}
-
-impl Voice for OutVoice {
-    fn tag(&self) -> voice::Tag {
-        self.tag
     }
 }
 

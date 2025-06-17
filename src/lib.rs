@@ -92,6 +92,7 @@ macro_rules! implement_tag {
 
         /// Identifier.
         #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+        #[repr(C)]
         pub struct Tag(pub crate::Tag);
 
         impl fmt::Display for Tag {
