@@ -46,7 +46,7 @@ impl Host {
     /// Send message to host.
     ///
     /// See [`plugin::message`](../plugin/message/index.html).
-    pub fn on_message<T: message::Message>(&mut self, tag: plugin::Tag, message: T) -> T::Return {
+    pub fn on_message<T: message::Message>(&self, tag: plugin::Tag, message: T) -> T::Return {
         message.send(tag, self)
     }
 

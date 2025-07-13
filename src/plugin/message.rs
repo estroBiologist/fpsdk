@@ -16,7 +16,7 @@ pub trait Message {
     type Return;
 
     /// Send the message.
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return;
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return;
 }
 
 macro_rules! impl_message {
@@ -24,9 +24,9 @@ macro_rules! impl_message {
         impl Message for $message {
             type Return = ();
 
-            fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+            fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
                 unsafe {
-                    host_on_message(*host.host_ptr.get_mut(), tag.0, self.into());
+                    host_on_message(*host.host_ptr.as_ptr(), tag.0, self.into());
                 }
             }
         }
@@ -38,8 +38,8 @@ macro_rules! impl_message_ty {
         impl Message for $message {
             type Return = $res;
 
-            fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
-                ValuePtr(unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, self.into()) })
+            fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
+                ValuePtr(unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, self.into()) })
                     .get::<$res>()
             }
         }
@@ -288,10 +288,10 @@ pub struct TicksToTime(pub u32);
 impl Message for TicksToTime {
     type Return = SongTime;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         let message = FlMessage::from(self);
         let time_ptr = message.index;
-        unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, message) };
+        unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, message) };
         ValuePtr(time_ptr).get::<Self::Return>()
     }
 }
@@ -367,9 +367,9 @@ pub struct GetParamMenuEntry(pub usize, pub usize);
 impl Message for GetParamMenuEntry {
     type Return = Option<ParamMenuEntry>;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         let message = FlMessage::from(self);
-        let result = unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, message) };
+        let result = unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, message) };
 
         if (result as *mut c_void).is_null() {
             return None;
@@ -717,15 +717,15 @@ pub struct GetMixingTime(pub TimeFormat, pub u64);
 impl Message for GetMixingTime {
     type Return = Time;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         get_time_send(self, tag, host)
     }
 }
 
-fn get_time_send<T: Into<FlMessage>>(msg: T, tag: plugin::Tag, host: &mut Host) -> Time {
+fn get_time_send<T: Into<FlMessage>>(msg: T, tag: plugin::Tag, host: &Host) -> Time {
     let message: FlMessage = msg.into();
     let time_ptr = message.value;
-    unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, message) };
+    unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, message) };
     ValuePtr(time_ptr).get::<Time>()
 }
 
@@ -751,7 +751,7 @@ pub struct GetPlaybackTime(pub TimeFormat, pub u64);
 impl Message for GetPlaybackTime {
     type Return = Time;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         get_time_send(self, tag, host)
     }
 }
@@ -774,7 +774,7 @@ pub struct GetSelTime(pub TimeFormat);
 impl Message for GetSelTime {
     type Return = Time;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         get_time_send(self, tag, host)
     }
 }
@@ -833,9 +833,9 @@ pub struct SendSysEx<'a>(pub usize, pub &'a [u8]);
 impl Message for SendSysEx<'_> {
     type Return = ();
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         unsafe {
-            host_on_message(*host.host_ptr.get_mut(), tag.0, self.into());
+            host_on_message(*host.host_ptr.as_ptr(), tag.0, self.into());
         }
     }
 }
@@ -939,10 +939,10 @@ pub struct GetMainFormHandle;
 impl Message for GetMainFormHandle {
     type Return = Option<*mut c_void>;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         let message = FlMessage::from(self);
         let result_ptr = message.value;
-        unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, message) };
+        unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, message) };
 
         if result_ptr == 0 {
             None
@@ -1061,7 +1061,7 @@ pub struct GetInName(pub usize);
 impl Message for GetInName {
     type Return = Option<NameColor>;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         get_name_dispatcher(self, tag, host)
     }
 }
@@ -1069,11 +1069,11 @@ impl Message for GetInName {
 fn get_name_dispatcher<T: Into<FlMessage>>(
     msg: T,
     tag: plugin::Tag,
-    host: &mut Host,
+    host: &Host,
 ) -> Option<NameColor> {
     let message: FlMessage = msg.into();
     let result_ptr = message.value;
-    let result = unsafe { host_on_message(*host.host_ptr.get_mut(), tag.0, message) };
+    let result = unsafe { host_on_message(*host.host_ptr.as_ptr(), tag.0, message) };
 
     if result == 0 || (result_ptr as *mut c_void).is_null() {
         return None;
@@ -1115,7 +1115,7 @@ pub struct GetOutName(pub usize);
 impl Message for GetOutName {
     type Return = Option<NameColor>;
 
-    fn send(self, tag: plugin::Tag, host: &mut Host) -> Self::Return {
+    fn send(self, tag: plugin::Tag, host: &Host) -> Self::Return {
         get_name_dispatcher(self, tag, host)
     }
 }
