@@ -230,7 +230,7 @@ impl Host {
     /// [`Plugin::render`](../plugin/trait.Plugin.html#method.render) (i.e. it's supposed to be used
     /// inside this method only).
     pub fn buffer(
-        &mut self,
+        &self,
         tag: plugin::Tag,
         kind: Buffer,
         length: usize,
@@ -245,13 +245,13 @@ impl Host {
     }
 
     fn input_buf(
-        &mut self,
+        &self,
         tag: plugin::Tag,
         offset: usize,
         length: usize,
     ) -> Option<&mut [[f32; 2]]> {
         let in_buf =
-            unsafe { host_get_input_buf(*self.host_ptr.get_mut(), tag.0, offset as intptr_t) };
+            unsafe { host_get_input_buf(*self.host_ptr.as_ptr(), tag.0, offset as intptr_t) };
         if in_buf.flags == 0 || length == 0 {
             return None;
         }
@@ -259,13 +259,13 @@ impl Host {
     }
 
     fn output_buf(
-        &mut self,
+        &self,
         tag: plugin::Tag,
         offset: usize,
         length: usize,
     ) -> Option<&mut [[f32; 2]]> {
         let out_buf =
-            unsafe { host_get_output_buf(*self.host_ptr.get_mut(), tag.0, offset as intptr_t) };
+            unsafe { host_get_output_buf(*self.host_ptr.as_ptr(), tag.0, offset as intptr_t) };
         if out_buf.flags == 0 || length == 0 {
             return None;
         }
@@ -273,28 +273,28 @@ impl Host {
     }
 
     fn insert_buf(
-        &mut self,
+        &self,
         tag: plugin::Tag,
         offset: isize,
         length: usize,
     ) -> Option<&mut [[f32; 2]]> {
-        let insert_buf = unsafe { host_get_insert_buf(*self.host_ptr.get_mut(), tag.0, offset) };
+        let insert_buf = unsafe { host_get_insert_buf(*self.host_ptr.as_ptr(), tag.0, offset) };
         if insert_buf.is_null() || length == 0 {
             return None;
         }
         Some(unsafe { slice::from_raw_parts_mut(insert_buf as *mut [f32; 2], length) })
     }
 
-    fn mix_buf(&mut self, offset: isize, length: usize) -> Option<&mut [[f32; 2]]> {
-        let mix_buf = unsafe { host_get_mix_buf(*self.host_ptr.get_mut(), offset) };
+    fn mix_buf(&self, offset: isize, length: usize) -> Option<&mut [[f32; 2]]> {
+        let mix_buf = unsafe { host_get_mix_buf(*self.host_ptr.as_ptr(), offset) };
         if mix_buf.is_null() || length == 0 {
             return None;
         }
         Some(unsafe { slice::from_raw_parts_mut(mix_buf as *mut [f32; 2], length) })
     }
 
-    fn send_buf(&mut self, index: usize, length: usize) -> Option<&mut [[f32; 2]]> {
-        let mix_buf = unsafe { host_get_send_buf(*self.host_ptr.get_mut(), index as intptr_t) };
+    fn send_buf(&self, index: usize, length: usize) -> Option<&mut [[f32; 2]]> {
+        let mix_buf = unsafe { host_get_send_buf(*self.host_ptr.as_ptr(), index as intptr_t) };
         if mix_buf.is_null() || length == 0 {
             return None;
         }
