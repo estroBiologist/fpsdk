@@ -35,7 +35,7 @@ macro_rules! create_plugin {
 
         #[allow(non_snake_case)]
         #[no_mangle]
-        pub unsafe extern "C" fn CreatePlugInstance(
+        pub unsafe extern "system" fn CreatePlugInstance(
             host: *mut c_void,
             tag: $crate::intptr_t,
         ) -> *mut c_void {
