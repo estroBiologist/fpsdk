@@ -710,7 +710,7 @@ pub enum Message<'a> {
     /// FPF_GetChanCustomShape.
     ///
     /// The value holds the new shape.
-    ChanSampleChanged(&'a [f32]),
+    ChanSampleChanged(Option<&'a [f32]>),
     /// The host has enabled/disabled the plugin.
     ///
     /// The value will contain the new state (`false` for disabled, `true` for enabled)
@@ -875,9 +875,13 @@ impl Message<'_> {
     }
 
     fn from_chan_sample_changed(message: FlMessage) -> Self {
-        let slice =
-            unsafe { std::slice::from_raw_parts_mut(message.value as *mut f32, WAVETABLE_SIZE) };
-        Message::ChanSampleChanged(slice)
+        if message.value != 0 {
+            let slice =
+                unsafe { std::slice::from_raw_parts_mut(message.value as *mut f32, WAVETABLE_SIZE) };
+            Message::ChanSampleChanged(Some(slice))
+        } else {
+            Message::ChanSampleChanged(None)
+        }
     }
 }
 
