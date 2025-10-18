@@ -71,7 +71,7 @@ impl PromptBuilder {
                 &mut color,
             )
         } {
-            unsafe { CString::from_raw(value) };
+            unsafe { drop(CString::from_raw(value)) };
             return None;
         }
 

@@ -8,7 +8,7 @@ use std::slice;
 use std::sync::atomic::AtomicPtr;
 use std::sync::{Arc, Mutex};
 
-use log::trace;
+//use log::trace;
 
 use crate::plugin::{self, message};
 use crate::voice::{self, SendVoiceHandler};
@@ -381,12 +381,12 @@ impl Host {
         vol
     }
 
+    /// get app handle from host
     pub fn get_app_handle(&self) -> *mut c_void {
         unsafe { host_get_app_handle(*self.host_ptr.as_ptr()) }
     }
 }
 
-#[no_mangle]
 extern "C" {
     fn host_on_parameter(host: *mut c_void, tag: intptr_t, index: c_int, value: c_int);
     fn host_on_controller(host: *mut c_void, tag: intptr_t, index: intptr_t, value: intptr_t);
@@ -514,7 +514,7 @@ impl Voicer {
 impl SendVoiceHandler for Voicer {
     /// Tell the host the specified voice should be silent (Note Off).
     fn release(&mut self, tag: voice::Tag) {
-        trace!("manully release voice {}", tag);
+        //trace!("manully release voice {}", tag);
         unsafe { host_release_voice(*self.host_ptr.get_mut(), tag.0) };
     }
 
@@ -522,7 +522,7 @@ impl SendVoiceHandler for Voicer {
     ///
     /// This method forces FL Studio to ask the plugin to destroy its voice.
     fn kill(&mut self, tag: voice::Tag) {
-        trace!("manually kill voice {}", tag);
+        //trace!("manually kill voice {}", tag);
         unsafe { host_kill_voice(*self.host_ptr.get_mut(), tag.0) };
     }
 
@@ -534,7 +534,6 @@ impl SendVoiceHandler for Voicer {
     }
 }
 
-#[no_mangle]
 extern "C" {
     fn host_release_voice(host: *mut c_void, tag: intptr_t);
     fn host_kill_voice(host: *mut c_void, tag: intptr_t);
@@ -573,36 +572,36 @@ impl SendVoiceHandler for OutVoicer {
 
         if inner_tag == -1 {
             // if FVH_Null
-            unsafe { Box::from_raw(params_ptr) }; // free the memory
-            trace!("send trigger voice is null");
+            unsafe { drop(Box::from_raw(params_ptr)) }; // free the memory
+            //trace!("send trigger voice is null");
             return None;
         }
 
         let voice = OutVoice::new(tag, AtomicPtr::new(params_ptr), voice::Tag(inner_tag));
-        trace!("send trigger output voice {:?}", voice);
+        //trace!("send trigger output voice {:?}", voice);
         self.voices.insert(tag, voice);
         Some(tag)
     }
 
     fn release(&mut self, tag: voice::Tag) {
         if let Some(voice) = self.voices.get_mut(&tag) {
-            trace!("send release output voice {:?}", voice);
+            //trace!("send release output voice {:?}", voice);
             unsafe { host_release_out_voice(*self.host_ptr.get_mut(), voice.inner_tag().0) }
         }
     }
 
     fn kill(&mut self, tag: voice::Tag) {
         if let Some(mut voice) = self.voices.remove(&tag) {
-            trace!("send kill output voice {}", tag);
+            //trace!("send kill output voice {}", tag);
             unsafe {
                 host_kill_out_voice(*self.host_ptr.get_mut(), voice.inner_tag().0);
-                Box::from_raw(*voice.params_ptr.get_mut());
+                drop(Box::from_raw(*voice.params_ptr.get_mut()));
             };
         }
     }
 
     fn on_event(&mut self, tag: voice::Tag, event: voice::Event) -> Option<ValuePtr> {
-        trace!("send event {:?} for out voice {:?}", event, tag);
+        //trace!("send event {:?} for out voice {:?}", event, tag);
         let host_ptr = *self.host_ptr.get_mut();
         self.voices.get_mut(&tag).and_then(|voice| {
             Option::<FlMessage>::from(event).map(|message| {
@@ -817,7 +816,7 @@ pub enum Message<'a> {
 
 impl From<FlMessage> for Message<'_> {
     fn from(message: FlMessage) -> Self {
-        trace!("host::Message::from {:?}", message);
+        //trace!("host::Message::from {:?}", message);
 
         let result = match message.id {
             0 => Message::from_show_editor(message),
@@ -854,7 +853,7 @@ impl From<FlMessage> for Message<'_> {
             _ => Message::Unknown,
         };
 
-        trace!("host::Message::{:?}", result);
+        //trace!("host::Message::{:?}", result);
 
         result
     }
@@ -877,7 +876,7 @@ impl Message<'_> {
     fn from_chan_sample_changed(message: FlMessage) -> Self {
         if message.value != 0 {
             let slice =
-                unsafe { std::slice::from_raw_parts_mut(message.value as *mut f32, WAVETABLE_SIZE) };
+                unsafe { slice::from_raw_parts_mut(message.value as *mut f32, WAVETABLE_SIZE) };
             Message::ChanSampleChanged(Some(slice))
         } else {
             Message::ChanSampleChanged(None)
@@ -941,7 +940,7 @@ pub enum GetName {
 
 impl From<FlMessage> for GetName {
     fn from(message: FlMessage) -> Self {
-        trace!("GetName::from {:?}", message);
+        //trace!("GetName::from {:?}", message);
 
         let result = match message.id {
             0 => GetName::Param(message.index as usize),
@@ -957,7 +956,7 @@ impl From<FlMessage> for GetName {
             _ => GetName::Unknown,
         };
 
-        trace!("GetName::{:?}", result);
+        //trace!("GetName::{:?}", result);
 
         result
     }
@@ -1058,8 +1057,6 @@ pub enum Event {
 
 impl From<FlMessage> for Event {
     fn from(message: FlMessage) -> Self {
-        trace!("Event::from {:?}", message);
-
         let result = match message.id {
             0 => Event::Tempo(f32::from_raw_ptr(message.index), message.value as u32),
             1 => Event::MaxPoly(message.index as i32),
@@ -1068,8 +1065,6 @@ impl From<FlMessage> for Event {
             4 => Event::MidiPitch(message.index as i32),
             _ => Event::Unknown,
         };
-
-        trace!("Event::{:?}", result);
 
         result
     }

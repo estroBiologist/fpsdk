@@ -843,7 +843,7 @@ impl Message for SendSysEx<'_> {
 impl From<SendSysEx<'_>> for FlMessage {
     fn from(message: SendSysEx<'_>) -> Self {
         let len = message.1.len() as i32;
-        let len_bytes: [u8; mem::size_of::<i32>()] = unsafe { mem::transmute(len) };
+        let len_bytes: [u8; size_of::<i32>()] = len.to_ne_bytes();
         let mut final_data = [&len_bytes, message.1].concat();
         let data_ptr = final_data.as_mut_ptr();
         mem::forget(final_data);
