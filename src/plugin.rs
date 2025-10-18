@@ -68,7 +68,7 @@ pub trait Plugin {
     /// See [`host::Message`](../host/enum.Message.html) for possible messages.
     ///
     /// Can be called from GUI or mixer threads.
-    fn on_message(&self, message: host::Message<'_>) -> Box<dyn AsRawPtr>;
+    fn on_message(&self, message: host::Message<'_>) -> intptr_t;
     /// This is called when the host wants to know a text representation of some value.
     ///
     /// Can be called from GUI or mixer threads.
@@ -478,7 +478,7 @@ unsafe extern "C" fn plugin_dispatcher(
     adapter: *mut PluginAdapter,
     message: FlMessage,
 ) -> intptr_t {
-    (*adapter).0.on_message(message.into()).as_raw_ptr()
+    (*adapter).0.on_message(message.into())
 }
 
 /// [`Plugin::name_of`](trait.Plugin.html#tymethod.name_of) FFI.
