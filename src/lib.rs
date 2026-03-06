@@ -295,7 +295,7 @@ impl EditorHandle {
 
     #[cfg(target_os = "macos")]
     unsafe fn attach_editor_mac<V: HasRawWindowHandle>(&self, view: &mut V) {
-        if let RawWindowHandle::MacOS(handle) = view.raw_window_handle() {
+        if let RawWindowHandle::AppKit(handle) = view.raw_window_handle() {
             if handle.ns_view.is_null() {
                 return;
             }
